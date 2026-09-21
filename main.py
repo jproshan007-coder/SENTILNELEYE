@@ -17,7 +17,7 @@ from camera_manager import camera_manager_instance
 from pipeline import pipeline_instance
 
 app = FastAPI(
-    title="SMART CCTV CRIME DETECTION AI",
+    title="SENTINELEYE AI - Smart CCTV Crime Detection",
     description="Unified Single-Project Security Command Center AI Platform",
     version="2.0.0"
 )
@@ -218,9 +218,6 @@ def trigger_demo_scenario(scenario: str = Form(...), camera_id: str = Form("CAM-
     incident_id = pipeline_instance.save_incident_to_db(alert)
     alert['id'] = incident_id
 
-    pipeline_instance.last_alert_time[alert['camera_id']] = now
-    pipeline_instance.active_camera_alerts[alert['camera_id']] = alert
-
     asyncio.create_task(ws_manager.broadcast({"type": "NEW_ALERT", "data": alert}))
     return {"status": "success", "alert": alert}
 
@@ -309,9 +306,9 @@ def get_stats():
     }
 
 # -------------------------------------------------------------
-# STATIC FRONTEND SERVING
+# STATIC FRONTEND SERVING FROM ROOT /dist
 # -------------------------------------------------------------
-DIST_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+DIST_DIR = os.path.join(os.path.dirname(__file__), "dist")
 if os.path.exists(DIST_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(DIST_DIR, "assets")), name="assets")
 
@@ -327,9 +324,9 @@ if os.path.exists(DIST_DIR):
 @app.on_event("startup")
 async def startup_event():
     init_db()
-    print("[Smart CCTV] Database initialized successfully.")
+    print("[SENTINELEYE AI] Database initialized successfully.")
     asyncio.create_task(ai_pipeline_background_loop())
-    print("[Smart CCTV] AI Vision Pipeline background loop active.")
+    print("[SENTINELEYE AI] AI Vision Pipeline background loop active.")
 
 if __name__ == "__main__":
     import uvicorn

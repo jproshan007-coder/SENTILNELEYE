@@ -6,7 +6,7 @@
       "use": "@vercel/python"
     },
     {
-      "src": "frontend/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
@@ -24,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/$1"
     }
   ]
 }
