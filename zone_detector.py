@@ -1,5 +1,5 @@
 import time
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple
 
 class Point:
     def __init__(self, x: float, y: float):
@@ -7,7 +7,6 @@ class Point:
         self.y = y
 
 def is_point_in_polygon(point: Point, polygon: List[Point]) -> bool:
-    """Ray-casting algorithm for point-in-polygon testing."""
     num_vertices = len(polygon)
     if num_vertices < 3:
         return False
@@ -28,16 +27,10 @@ def is_point_in_polygon(point: Point, polygon: List[Point]) -> bool:
 
 class ZoneDetector:
     def __init__(self):
-        # track_id -> start_time
         self.entry_times: Dict[str, float] = {}
-        # track_id -> total_dwell_time
         self.dwell_times: Dict[str, float] = {}
 
     def process_person(self, track_id: str, person_box: Dict[str, float], polygon_pts: List[Dict[str, float]], dwell_threshold: float = 2.0) -> Tuple[bool, float, List[str]]:
-        """
-        Evaluates whether a person's center is inside a restricted zone and has lingered > dwell_threshold.
-        Returns: (is_alert, dwell_duration, explainable_reasons)
-        """
         cx = (person_box['x'] + person_box['width'] / 2.0) / 640.0
         cy = (person_box['y'] + person_box['height']) / 480.0
         

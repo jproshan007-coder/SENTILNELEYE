@@ -11,11 +11,11 @@ import numpy as np
 from typing import Dict, List, Optional, Tuple, Callable
 from PIL import Image, ImageDraw, ImageFont
 
-from backend.ai.camera_manager import camera_manager_instance
-from backend.ai.zone_detector import ZoneDetector
-from backend.ai.fight_detector import FightDetector
-from backend.ai.speed_detector import SpeedDetector
-from backend.database.db import get_db_connection
+from camera_manager import camera_manager_instance
+from zone_detector import ZoneDetector
+from fight_detector import FightDetector
+from speed_detector import SpeedDetector
+from db import get_db_connection
 
 class AIPipeline:
     def __init__(self):
@@ -24,11 +24,8 @@ class AIPipeline:
         self.fight_detector = FightDetector()
         self.speed_detector = SpeedDetector()
         
-        # State tracking for alerts cooldown (camera_id -> last_alert_time)
         self.last_alert_time: Dict[str, float] = {}
         self.cooldown_seconds = 5.0
-        
-        # Active alerts per camera
         self.active_camera_alerts: Dict[str, Dict] = {}
 
     def get_restricted_zones_from_db(self, camera_id: str) -> List[Dict[str, float]]:
@@ -89,12 +86,10 @@ class AIPipeline:
         return incident_id
 
     def process_camera(self, camera_id: str) -> Optional[Dict]:
-        """Runs one step of AI evaluation for a camera feed."""
         now = time.time()
         settings = self.get_settings_from_db()
         zone_points = self.get_restricted_zones_from_db(camera_id)
         
-        # Check cooldown
         if camera_id in self.last_alert_time:
             if now - self.last_alert_time[camera_id] < self.cooldown_seconds:
                 return None
@@ -294,13 +289,11 @@ class AIPipeline:
         zone_points = self.get_restricted_zones_from_db(camera_id)
         detections = self._extract_person_detections(camera_id, bgr_frame, zone_points)
 
-        # Draw Restricted Zone Polygon
         if zone_points and len(zone_points) >= 3:
             poly_coords = [(int(p['x'] * 640), int(p['y'] * 480)) for p in zone_points]
             draw.polygon(poly_coords, outline=(255, 46, 77), width=2)
             draw.text((poly_coords[0][0] + 5, poly_coords[0][1] + 5), "RESTRICTED ZONE (AI ACTIVE)", fill=(255, 46, 77))
 
-        # Draw Bounding Boxes
         for det in detections:
             box = det['box']
             pid = det['id']
@@ -326,14 +319,12 @@ class AIPipeline:
             draw.rectangle([bx, by - 20, bx + bw, by], fill=box_color)
             draw.text((bx + 4, by - 16), label_str, fill=(10, 10, 15))
 
-        # Top HUD Bar
         now_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         src_label = cam_meta.get("source_type", "DEMO").upper()
         draw.rectangle([0, 0, 640, 32], fill=(15, 23, 42))
         draw.text((12, 8), f"● {src_label} [{camera_id}] {cam_meta.get('name', camera_id).upper()}", fill=(0, 240, 255))
         draw.text((640 - 180, 8), f"FPS: 30.0 | {now_str}", fill=(0, 230, 118))
 
-        # Active Alert Banner Overlay
         if active_alert:
             draw.rectangle([0, 32, 640, 68], fill=(255, 46, 77))
             draw.text((20, 42), f"⚠️ EMERGENCY ALERT: {active_alert['event_type'].upper()} | RISK: {active_alert['risk_level'].upper()} ({active_alert['risk_score']}%)", fill=(255, 255, 255))

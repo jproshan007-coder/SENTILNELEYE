@@ -3,11 +3,9 @@ from typing import Dict, List, Tuple
 
 class SpeedDetector:
     def __init__(self):
-        # track_id -> history of (x, y, timestamp)
         self.history: Dict[str, List[Tuple[float, float, float]]] = {}
 
     def get_cardinal_direction(self, dx: float, dy: float) -> str:
-        """Converts delta vector to cardinal direction string."""
         if abs(dx) < 0.1 and abs(dy) < 0.1:
             return "STATIONARY"
         
@@ -32,10 +30,6 @@ class SpeedDetector:
             return "EAST"
 
     def process_movement(self, track_id: str, current_x: float, current_y: float, timestamp: float, speed_threshold: float = 3.5) -> Tuple[bool, float, str, float, int, List[str]]:
-        """
-        Evaluates person movement velocity and direction.
-        Returns: (is_running, speed_m_s, direction, confidence, risk_score, explainable_reasons)
-        """
         if track_id not in self.history:
             self.history[track_id] = []
         

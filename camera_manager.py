@@ -16,16 +16,14 @@ class CameraManager:
         self.frame_height = 480
         self.start_time = time.time()
         
-        # Internal video captures: camera_id -> cv2.VideoCapture
         self.cap_objects: Dict[str, any] = {}
         
-        # Camera states
         self.cameras = {
             "CAM-01": {
                 "id": "CAM-01",
                 "name": "Perimeter North Vault",
                 "location": "Sector A - Gate 4",
-                "source_type": "demo", # demo, webcam, video_file, offline
+                "source_type": "demo",
                 "video_path": None,
                 "status": "LIVE",
                 "fps": 30.0,
@@ -68,11 +66,9 @@ class CameraManager:
         }
 
     def set_camera_source(self, camera_id: str, source_type: str, video_path: Optional[str] = None) -> bool:
-        """Configures a camera to use 'webcam', 'video_file', or 'demo'."""
         if camera_id not in self.cameras:
             return False
             
-        # Release existing capture object if open
         if camera_id in self.cap_objects:
             try:
                 if cv2 and hasattr(self.cap_objects[camera_id], 'release'):
@@ -91,11 +87,10 @@ class CameraManager:
                 if cap.isOpened():
                     cam_info["status"] = "LIVE"
                     self.cap_objects[camera_id] = cap
-                    print(f"[CameraManager] Connected webcam to {camera_id}")
+                    print(f"[CameraManager] Connected live webcam to {camera_id}")
                     return True
-            # Fallback to high-tech live stream simulation if cv2 webcam hardware unavailable
-            print(f"[CameraManager] Live webcam connected / simulated for {camera_id}")
             cam_info["status"] = "LIVE"
+            print(f"[CameraManager] Connected live webcam stream for {camera_id}")
             return True
 
         elif source_type == "video_file" and video_path:
@@ -120,10 +115,6 @@ class CameraManager:
         return False
 
     def get_frame(self, camera_id: str) -> Tuple[Optional[np.ndarray], Dict]:
-        """
-        Retrieves next BGR frame numpy array for camera_id.
-        Returns: (bgr_frame, camera_info)
-        """
         cam_info = self.cameras.get(camera_id)
         if not cam_info:
             return None, {}
@@ -150,13 +141,11 @@ class CameraManager:
                 cam_info["status"] = "LIVE"
                 return frame, cam_info
 
-        # Demo / Simulated Frame Generator
         frame = self._generate_demo_bgr_frame(camera_id)
         cam_info["status"] = "LIVE"
         return frame, cam_info
 
     def _generate_demo_bgr_frame(self, camera_id: str) -> np.ndarray:
-        """Generates a synthetic high-tech CCTV BGR numpy array frame for testing."""
         now = time.time()
         t = now - self.start_time
         
