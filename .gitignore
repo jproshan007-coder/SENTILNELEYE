@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Python Virtual Environment & Bytecode
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+backend/__pycache__/
+backend/*/__pycache__/
+
+# Frontend build outputs
+# frontend/dist/
+
+# SQLite Database & Uploads
+backend/database/*.db
+backend/assets/uploads/*
+!backend/assets/uploads/.gitkeep
+
+# OS Files
+.DS_Store
+*.log
